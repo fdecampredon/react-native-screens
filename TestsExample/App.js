@@ -85,7 +85,7 @@ enableFreeze(true);
 export default function App() {
   return (
     <ReanimatedScreenProvider>
-      <Test42 />
+      <Test702 />
     </ReanimatedScreenProvider>
   );
 }

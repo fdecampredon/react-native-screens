@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
-import { Dimensions, Image, StyleSheet, Text, View } from 'react-native';
-import { NavigationContainer, ParamListBase } from '@react-navigation/native';
+import React, {useState} from 'react';
+import {Button, Dimensions, Image, StyleSheet, Text, View} from 'react-native';
+import {NavigationContainer, ParamListBase} from '@react-navigation/native';
 import {
   createNativeStackNavigator,
   NativeStackNavigationProp,
@@ -20,32 +20,38 @@ function First({
   navigation: NativeStackNavigationProp<ParamListBase>;
 }) {
   return (
-    <ScrollView>
-      <Post onPress={() => navigation.navigate('Second')} />
-      <Post onPress={() => navigation.navigate('Second')} />
-      <Post onPress={() => navigation.navigate('Second')} />
-    </ScrollView>
+    <View style={{
+      flex: 1,
+      backgroundColor: 'blue',
+    }}>
+      <Button
+        onPress={() => navigation.navigate('Second')}
+        title="Go to second"
+      />
+    </View>
   );
 }
 
 function Second() {
   return (
-    <ScrollView>
+    <View style={{
+      flex: 1, 
+      backgroundColor: 'red',
+    }}>
       <Text style={styles.subTitle}>
         Use swipe back gesture to go back (iOS only)
       </Text>
-      <Post />
-    </ScrollView>
+    </View>
   );
 }
 
 export default function App() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{flex: 1}}>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
-            fullScreenSwipeEnabled: true,
+            fullScreenSwipeEnabled: false,
             stackAnimation: 'fade',
             customAnimationOnSwipe: true,
           }}>
@@ -59,7 +65,7 @@ export default function App() {
 
 // components
 
-function Post({ onPress }: { onPress?: () => void }) {
+function Post({onPress}: {onPress?: () => void}) {
   const [width] = useState(Math.round(Dimensions.get('screen').width));
 
   return (
@@ -80,14 +86,14 @@ function Post({ onPress }: { onPress?: () => void }) {
 function generatePhotos(
   amount: number,
   width: number,
-  height: number
+  height: number,
 ): JSX.Element[] {
   const startFrom = Math.floor(Math.random() * 20) + 10;
-  return Array.from({ length: amount }, (_, index) => {
+  return Array.from({length: amount}, (_, index) => {
     const uri = `https://picsum.photos/id/${
       startFrom + index
     }/${width}/${height}`;
-    return <Image style={{ width, height }} key={uri} source={{ uri }} />;
+    return <Image style={{width, height}} key={uri} source={{uri}} />;
   });
 }
 
