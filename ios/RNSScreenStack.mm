@@ -751,8 +751,9 @@
   if (isRTL) {
     x = _controller.view.frame.size.width - x;
   }
-  
-  // see: https://github.com/software-mansion/react-native-screens/pull/1442/commits/74d4bae321875d8305ad021b3d448ebf713e7d56
+
+  // see:
+  // https://github.com/software-mansion/react-native-screens/pull/1442/commits/74d4bae321875d8305ad021b3d448ebf713e7d56
   // this prop is always default initialized so we do not expect any nils
   float start = [gestureResponseDistanceValues[@"start"] floatValue];
   float end = [gestureResponseDistanceValues[@"end"] floatValue];
@@ -761,10 +762,7 @@
 
   // we check if any of the constraints are violated and return NO if so
   return !(
-      (start != -1 && x < start) ||
-      (end != -1 && x > end) ||
-      (top != -1 && y < top) ||
-      (bottom != -1 && y > bottom));
+      (start != -1 && x < start) || (end != -1 && x > end) || (top != -1 && y < top) || (bottom != -1 && y > bottom));
 }
 
 // By default, the header buttons that are not inside the native hit area
@@ -806,6 +804,33 @@
     shouldBeRequiredToFailByGestureRecognizer:(UIGestureRecognizer *)otherGestureRecognizer
 {
   return [self isScrollViewPanGestureRecognizer:otherGestureRecognizer];
+}
+
+- (void)insertReactSubview:(RNSScreenView *)subview atIndex:(NSInteger)atIndex
+{
+  if (![subview isKindOfClass:[RNSScreenView class]]) {
+    RCTLogError(@"ScreenStack only accepts children of type Screen");
+    return;
+  }
+  subview.reactSuperview = self;
+  [_reactSubviews insertObject:subview atIndex:atIndex];
+}
+
+- (void)removeReactSubview:(RNSScreenView *)subview
+{
+  subview.reactSuperview = nil;
+  [_reactSubviews removeObject:subview];
+}
+
+- (void)didUpdateReactSubviews
+{
+  // we need to wait until children have their layout set. At this point they don't have the layout
+  // set yet, however the layout call is already enqueued on ui thread. Enqueuing update call on the
+  // ui queue will guarantee that the update will run after layout.
+  dispatch_async(dispatch_get_main_queue(), ^{
+    self->_hasLayout = YES;
+    [self maybeAddToParentAndUpdateContainer];
+  });
 }
 
 #ifdef RN_FABRIC_ENABLED
@@ -904,33 +929,6 @@
     self.onFinishTransitioning(nil);
   }
   [RNSScreenWindowTraits updateWindowTraits];
-}
-
-- (void)insertReactSubview:(RNSScreenView *)subview atIndex:(NSInteger)atIndex
-{
-  if (![subview isKindOfClass:[RNSScreenView class]]) {
-    RCTLogError(@"ScreenStack only accepts children of type Screen");
-    return;
-  }
-  subview.reactSuperview = self;
-  [_reactSubviews insertObject:subview atIndex:atIndex];
-}
-
-- (void)removeReactSubview:(RNSScreenView *)subview
-{
-  subview.reactSuperview = nil;
-  [_reactSubviews removeObject:subview];
-}
-
-- (void)didUpdateReactSubviews
-{
-  // we need to wait until children have their layout set. At this point they don't have the layout
-  // set yet, however the layout call is already enqueued on ui thread. Enqueuing update call on the
-  // ui queue will guarantee that the update will run after layout.
-  dispatch_async(dispatch_get_main_queue(), ^{
-    self->_hasLayout = YES;
-    [self maybeAddToParentAndUpdateContainer];
-  });
 }
 
 - (void)invalidate
